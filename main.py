@@ -9,7 +9,9 @@ import json
 from datetime import date, timedelta
 from time import time
 from io import StringIO
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # chat_id = '-4090186402' ## Мой канал с алёртами
 chat_id = '-1002145547826' ## Чат закупка аструма
