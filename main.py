@@ -16,7 +16,7 @@ load_dotenv()
 # chat_id = '-4090186402' ## Мой канал с алёртами
 chat_id = '-1002145547826' ## Чат закупка аструма
 bot_token = os.getenv("TELEGRAM_API_TOKEN")
-token = os.getenv("YANDEX_DIRECT_TOKEN")
+token = os.getenv("YANDEX_TOKEN")
 
 url = 'https://api.direct.yandex.ru/live/v4/json/'
 ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
