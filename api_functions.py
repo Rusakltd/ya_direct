@@ -269,3 +269,27 @@ class YandexDirect:
                     # Принудительный выход из цикла
                     break
         return resultcsv
+    
+
+class YandexMessengerBot:
+    def __init__(self, token, chat_id):
+        """
+        Initializes a new instance of the Yandex bot with the provided 
+        token and chat ID.
+
+        Parameters:
+            token (str): The token for the Yandex bot.
+            chat_id (int): The ID of the chat.
+        """
+        self.token = token
+        self.base_url = "https://botapi.messenger.yandex.net/bot/v1/messages/"
+        self.chat_id = chat_id
+        self.headers = {"Authorization": f"OAuth {token}",
+                        'Content-Type': 'application/json'}
+
+    def send_text(self, text):
+        url = self.base_url + "sendText/"
+        data = {"chat_id": self.chat_id, 
+                  "text": text}
+        response = requests.post(url, headers=self.headers, json=data)
+        return response.json()
