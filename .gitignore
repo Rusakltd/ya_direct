@@ -6,3 +6,4 @@ Dockerfile
 /.ipnb_checkpoints
 test/
 .DS_Store
+*.json
