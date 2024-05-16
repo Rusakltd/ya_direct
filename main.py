@@ -30,7 +30,7 @@ ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
 ### Create Yandex Direct instance
 yandex = YandexDirect(token)
 
-### Accounts
+### Load accounts from json
 with Path('logins.json').open('r', encoding='utf-8') as f:
     logins_actual = json.load(f)
 
