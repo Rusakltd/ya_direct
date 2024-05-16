@@ -284,12 +284,23 @@ class YandexMessengerBot:
         self.token = token
         self.base_url = "https://botapi.messenger.yandex.net/bot/v1/messages/"
         self.chat_id = chat_id
-        self.headers = {"Authorization": f"OAuth {token}",
-                        'Content-Type': 'application/json'}
 
     def send_text(self, text):
+        self.headers = {"Authorization": f"OAuth {self.token}",
+                        'Content-Type': 'application/json'}
         url = self.base_url + "sendText/"
-        data = {"chat_id": self.chat_id, 
-                  "text": text}
+        if '/' in self.chat_id:
+            data = {"chat_id": self.chat_id,
+                    "text": text}
+        else:
+            data = {"login": self.chat_id,
+                    "text": text}
         response = requests.post(url, headers=self.headers, json=data)
+        return response.json()
+    
+    def getupdate(self, offset=0):
+        self.headers = {"Authorization": f"OAuth {self.token}"}
+        url = self.base_url + "getUpdates/"
+        params = {"offset": offset}
+        response = requests.get(url, headers=self.headers, params=params)
         return response.json()
