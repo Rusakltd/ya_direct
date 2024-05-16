@@ -1,7 +1,9 @@
 import os
+import json
 
 from io import StringIO
 from dotenv import load_dotenv
+from pathlib import Path
 
 import pandas as pd
 
@@ -22,11 +24,6 @@ ya_bot = YandexMessengerBot(yam_token, chat_id_ya)
 
 url = 'https://api.direct.yandex.ru/live/v4/json/'
 ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
-
-logins_actual = ['lost-ark-mrt', 'perfect-world-mrt', 'arche-age-mrt', 
-                 'allodsonline-games', 'atomicheart-game', 'battle-teams2', 
-                 'warface2016-2017warfacerwyndxg', 'revival-astrum']
-
        
 ## Yandex Export
 
@@ -34,9 +31,8 @@ logins_actual = ['lost-ark-mrt', 'perfect-world-mrt', 'arche-age-mrt',
 yandex = YandexDirect(token)
 
 ### Accounts
-logins_actual = ['lost-ark-mrt', 'perfect-world-mrt', 'arche-age-mrt', 
-                 'allodsonline-games', 'atomicheart-game', 'battle-teams2', 
-                 'warface2016-2017warfacerwyndxg', 'revival-astrum']
+with Path('logins.json').open('r', encoding='utf-8') as f:
+    logins_actual = json.load(f)
 
 ### Create dataframe with accounts budgets
 df = pd.DataFrame(yandex.accounts_budget(logins_actual))
