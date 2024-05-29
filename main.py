@@ -72,7 +72,7 @@ message = "\n\n".join(message)
 
 ## Send message
 if message:
-    message = f"Бюджеты в Yandex: \n {message}"
+    message = f"Бюджеты в Yandex:\n {message}"
     ya_bot.send_text(message)
 
 ## Send Alert to Telegram

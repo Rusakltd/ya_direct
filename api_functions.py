@@ -1,9 +1,9 @@
 import requests
 import json
-import csv
+import os
 from time import sleep
 from datetime import datetime, timedelta
-from io import StringIO
+import pytz
 
 def refresh_token_ads_vk(refresh_token, client_secret, client_id):
     """
@@ -104,7 +104,7 @@ def old_vk_get_stat_campaigns(access_token,
 
 
 
-# Define telegram bot
+# Telegram bot
 class TelegramBot:
     def __init__(self, token, chat_id):
         """
@@ -126,21 +126,57 @@ class TelegramBot:
         return response.json()
     
 
-## Yandex
+# Yandex Messenger bot 
+class YandexMessengerBot:
+    def __init__(self, token, chat_id):
+        """
+        Initializes a new instance of the Yandex bot with the provided 
+        token and chat ID.
+
+        Parameters:
+            token (str): The token for the Yandex bot.
+            chat_id (int): The ID of the chat.
+        """
+        self.token = token
+        self.base_url = "https://botapi.messenger.yandex.net/bot/v1/messages/"
+        self.chat_id = chat_id
+
+    def send_text(self, text):
+        self.headers = {"Authorization": f"OAuth {self.token}",
+                        'Content-Type': 'application/json'}
+        url = self.base_url + "sendText/"
+        if '/' in self.chat_id:
+            data = {"chat_id": self.chat_id,
+                    "text": text}
+        else:
+            data = {"login": self.chat_id,
+                    "text": text}
+        response = requests.post(url, headers=self.headers, json=data)
+        return response.json()
+    
+    def getupdate(self, offset=0):
+        self.headers = {"Authorization": f"OAuth {self.token}"}
+        url = self.base_url + "getUpdates/"
+        params = {"offset": offset}
+        response = requests.get(url, headers=self.headers, params=params)
+        return response.json()
+    
+
+
+## Yandex Direct
 class YandexDirect:
     def __init__(self, token):
         """
          Initializes a new instance of the yandex direct exporter 
          with the provided token.
 
-        Parameters:
-            token (str): The token for Yandex Direct API.
+        Parameters: token (str) - The token for Yandex Direct API.
         """
         self.token = token
         self.url_accounts = 'https://api.direct.yandex.ru/live/v4/json/'
         self.url_reports = 'https://api.direct.yandex.com/json/v5/reports'
+        self.url_campaigns = 'https://api.direct.yandex.com/json/v5/campaigns'
 
-# Создание HTTP-заголовков запроса
     def accounts_budget(self, logins):
         """
         Returns accounts budget
@@ -160,7 +196,6 @@ class YandexDirect:
     
         if response.status_code == 200:
             print("Request was successful")
-            print(response.json())
             json_data = response.json()
             accounts_budget = [{'Login': account['Login'], 
               'Amount': round(float(account['Amount']), 2)} for account in json_data['data']['Accounts']]
@@ -270,37 +305,120 @@ class YandexDirect:
                     break
         return resultcsv
     
-
-class YandexMessengerBot:
-    def __init__(self, token, chat_id):
+    def get_working_campaigns(self, login):
         """
-        Initializes a new instance of the Yandex bot with the provided 
-        token and chat ID.
-
-        Parameters:
-            token (str): The token for the Yandex bot.
-            chat_id (int): The ID of the chat.
+        Returns list of names and ids of working campaigns
         """
-        self.token = token
-        self.base_url = "https://botapi.messenger.yandex.net/bot/v1/messages/"
-        self.chat_id = chat_id
+        token = self.token
+        headers = {
+            "Authorization": "Bearer " + token,
+            "Client-Login": login
+        }
+        json_data = {
+            "method": "get",
+            "params": {
+                "SelectionCriteria": {
+                    "States": ["ON"]
+                },
+                "FieldNames": ["Id", "Name"]
+            }
+        }
+        response = requests.post(self.url_campaigns, headers=headers, json=json_data)
 
-    def send_text(self, text):
-        self.headers = {"Authorization": f"OAuth {self.token}",
-                        'Content-Type': 'application/json'}
-        url = self.base_url + "sendText/"
-        if '/' in self.chat_id:
-            data = {"chat_id": self.chat_id,
-                    "text": text}
+        if response.status_code == 200:
+            print("Request was successful")
+            json_data = response.json()
+            return json_data
         else:
-            data = {"login": self.chat_id,
-                    "text": text}
-        response = requests.post(url, headers=self.headers, json=data)
-        return response.json()
-    
-    def getupdate(self, offset=0):
-        self.headers = {"Authorization": f"OAuth {self.token}"}
-        url = self.base_url + "getUpdates/"
-        params = {"offset": offset}
-        response = requests.get(url, headers=self.headers, params=params)
-        return response.json()
+            print("Request failed with status code:", response.status_code)
+
+    def suspend_campaigns(self, login, campaign_ids):
+        """
+        Suspend campaigns in Yandex Direct
+        """
+        token = self.token
+        headers = {
+            "Authorization": "Bearer " + token,
+            "Client-Login": login
+        }
+        json_data = {
+            "method": "suspend",
+            "params": {
+                "SelectionCriteria": {
+                    "Ids": campaign_ids
+                }
+            }
+        }
+        response = requests.post(self.url_campaigns, headers=headers, json=json_data)
+
+        if response.status_code == 200:
+            print("Request was successful")
+            json_data = response.json()
+            timezone = pytz.timezone('Europe/Moscow')
+            current_time = datetime.now(timezone)
+            filepath = f"{login}.json"
+            json_to_save = {
+                "date" : current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "campaign_ids": campaign_ids                 
+            }
+            if os.path.exists(filepath):
+                print(f"Файл {filepath} уже существует. Данные будут заменены.")
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(json_to_save, f, indent=4, ensure_ascii=False)
+            else:
+                print(f"Файл {filepath} не существует. Создание нового.")
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(json_to_save, f, indent=4, ensure_ascii=False)
+            return json_data
+    def get_campaign_names(self, login, ids):
+        """
+        Get names of campaigns
+        """
+        token = self.token
+        headers = {
+            "Authorization": "Bearer " + token,
+            "Client-Login": login
+        }
+        json_data = {
+            "method": "get",
+            "params": {
+                "SelectionCriteria": {
+                    "Ids": ids
+                },
+                "FieldNames": ["Id", "Name"]
+            }
+        }
+        response = requests.post(self.url_campaigns, headers=headers, json=json_data)
+
+        if response.status_code == 200:
+            print("Request was successful")
+            json_data = response.json()
+            campaign_names = [campaign['Name'] for campaign in json_data['result']['Campaigns']]
+            return campaign_names
+
+    def recover_campaigns(self, login):
+        """
+        Turn suspended campaigns back
+        """
+        token = self.token
+        headers = {
+            "Authorization": "Bearer " + token,
+            "Client-Login": login
+        }
+        with open(f"{login}.json", 'r', encoding='utf-8') as f:
+            json_data_tmp = json.load(f)
+            campaign_ids = json_data_tmp['campaign_ids']
+        json_data = {
+            "method": "resume",
+            "params": {
+                "SelectionCriteria": {
+                    "Ids": campaign_ids
+                }
+            }
+        }
+        response = requests.post(self.url_campaigns, headers=headers, json=json_data)
+
+        if response.status_code == 200:
+            print("Request was successful")
+            json_data = response.json()
+            return json_data
