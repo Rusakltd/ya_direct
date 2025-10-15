@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from api_functions import TelegramBot
-from api_functions import YandexDirect
-from api_functions import YandexMessengerBot
+from api_lib.api_functions import YandexDirect
+from api_lib.api_functions import TelegramBot
+from api_lib.api_functions import YandexMessengerBot
 
 ## Get env variables
 load_dotenv()

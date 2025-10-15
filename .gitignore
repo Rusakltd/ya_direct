@@ -7,3 +7,4 @@ Dockerfile
 test/
 .DS_Store
 *.json
+*venv*/
