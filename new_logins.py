@@ -18,9 +18,8 @@ with open('logins2.json', 'r') as f:
     accounts_tokens = json.load(f)
 
 ## Create Yandex messenger bot instances
-# chat_id_ya = '0/0/6b2bfa7e-ed2e-4be9-9a12-b753a68a4a3e'
-# chat_id = '-4090186402' # Канал с алёртами
-chat_id_ya = 'aleksey.rusakov@astrum.team'
+chat_id_ya = '0/0/6b2bfa7e-ed2e-4be9-9a12-b753a68a4a3e' # Канал с алёртами в Yandex Messenger
+# chat_id_ya = 'aleksey.rusakov@astrum.team'
 ya_bot = YandexMessengerBot(yam_token, chat_id_ya)
 
 
@@ -32,10 +31,10 @@ yad = yd(token)
 balances =  yad.get_multiple_accounts_balances(accounts_dict=accounts_tokens)
 
 message = []
-message.append(f"Баланс новых аккаунтов:")
+message.append(f"**Баланс MGCom аккаунтов Yandex Direct**\n")
 
 for account in balances:
-    message.append(f"{account['login']}:\n{account['amount']:,.0f} руб.")
+    message.append(f"{account['login']} – {account['amount']:,.0f}")
 
 print('\n'.join(message))
-ya_bot.send_message('\n'.join(message))
+ya_bot.send_text('\n'.join(message))
