@@ -14,8 +14,14 @@ token = os.getenv("YANDEX_TOKEN")
 yam_token = os.getenv("YAM_TOKEN")
 
 ## Load accounts from json
-with open('logins2.json', 'r') as f:
+# Получаем директорию, где находится скрипт
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Путь к logins2.json в той же папке
+logins_path = os.path.join(script_dir, 'logins2.json')
+
+with open(logins_path, 'r') as f:
     accounts_tokens = json.load(f)
+
 
 ## Create Yandex messenger bot instances
 chat_id_ya = '0/0/6b2bfa7e-ed2e-4be9-9a12-b753a68a4a3e' # Канал с алёртами в Yandex Messenger
