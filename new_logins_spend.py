@@ -36,8 +36,8 @@ with open(logins_path, 'r') as f:
 
 
 ## Create Yandex messenger bot instances
-# chat_id_ya = '0/0/6b2bfa7e-ed2e-4be9-9a12-b753a68a4a3e' # Канал с алёртами в Yandex Messenger
-chat_id_ya = 'aleksey.rusakov@astrum.team'
+chat_id_ya = '0/0/6b2bfa7e-ed2e-4be9-9a12-b753a68a4a3e' # Канал с алёртами в Yandex Messenger
+# chat_id_ya = 'aleksey.rusakov@astrum.team'
 ya_bot = YandexMessengerBot(yam_token, chat_id_ya)
 
 
